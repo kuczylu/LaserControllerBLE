@@ -51,10 +51,7 @@ void loop() {
       case commandMeasure:
       {
         hasSuccess = laser.measure(distance);
-        String distanceStr = "Distance: ";
-        distanceStr += String(distance);
-        distanceStr += " cm";
-        sendMessage(distanceStr);
+        sendMessage(String(distance));
         break;
       }
       default:
