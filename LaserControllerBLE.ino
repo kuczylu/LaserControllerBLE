@@ -30,6 +30,9 @@ void loop() {
 
   char command = 0x00;
 
+    
+  unsigned long startTime = millis();
+  
   if(bleInterface.getCommand(command))
   {
     bool hasSuccess = false;
@@ -54,17 +57,22 @@ void loop() {
       }
       default:
       {
-        sendMessage("Command not recognized");
+        //sendMessage("Command not recognized");
       }
     }
+
 
     String resultStr = "r";
     resultStr += command;
     resultStr += hasSuccess ? "S" : "F";
     resultStr += getStringFromData(data);
+    resultStr += "t";
+
+    unsigned long endTime = millis();
+    resultStr += getStringFromTime(endTime - startTime);
     resultStr += "e";
-    sendMessage(resultStr);
     
+    sendMessage(resultStr);
   }
 }
 
@@ -74,22 +82,55 @@ void sendMessage(const String& message)
   bleInterface.sendMessage(message);
 }
 
-String getStringFromData(double data)
+
+String getStringFromTime(unsigned long t)
 {
   String str = "";
-  int dataHigh = floor(data);
-  int dataLow = floor(100.0 * data) - 100 * dataHigh;
+  unsigned long temp = t;
 
-  int num = 1000;
-  while(dataHigh < num)
+  if(t > 9999)
+  {
+    temp = 9999;
+  }
+
+  unsigned long num = 1000;
+  while(temp < num)
   {
     str += "0";
     num /= 10;
   }
   
-  str += dataHigh;
-  str += ".";
-  str += dataLow;
+  str += temp;
+  
+  return str;
+}
+
+
+
+String getStringFromData(double data)
+{
+  String str = "";
+
+  if(data >= 0.0)
+  {
+    int dataHigh = floor(data);
+    int dataLow = floor(100.0 * data) - 100 * dataHigh;
+
+    int num = 1000;
+    while(dataHigh < num)
+    {
+      str += "0";
+      num /= 10;
+    }
+  
+    str += dataHigh;
+    str += ".";
+    str += dataLow;
+  }
+  else
+  {
+    str = "0000.00";
+  }
   
   return str;
 }
