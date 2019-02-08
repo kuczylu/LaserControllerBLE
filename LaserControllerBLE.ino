@@ -32,9 +32,8 @@ void loop() {
 
   if(bleInterface.getCommand(command))
   {
-    sendMessage(String(command) + " - rec");
     bool hasSuccess = false;
-    double distance = -1.0;
+    double data = -1.0;
     
     switch (command)
     {
@@ -50,8 +49,7 @@ void loop() {
       }
       case commandMeasure:
       {
-        hasSuccess = laser.measure(distance);
-        sendMessage(String(distance));
+        hasSuccess = laser.measure(data);
         break;
       }
       default:
@@ -59,9 +57,12 @@ void loop() {
         sendMessage("Command not recognized");
       }
     }
-    
-    String resultStr = "Command ";
-    resultStr += hasSuccess ? "succeeded" : "failed";
+
+    String resultStr = "r";
+    resultStr += command;
+    resultStr += hasSuccess ? "S" : "F";
+    resultStr += getStringFromData(data);
+    resultStr += "e";
     sendMessage(resultStr);
     
   }
@@ -71,4 +72,24 @@ void loop() {
 void sendMessage(const String& message)
 {
   bleInterface.sendMessage(message);
+}
+
+String getStringFromData(double data)
+{
+  String str = "";
+  int dataHigh = floor(data);
+  int dataLow = floor(100.0 * data) - 100 * dataHigh;
+
+  int num = 1000;
+  while(dataHigh < num)
+  {
+    str += "0";
+    num /= 10;
+  }
+  
+  str += dataHigh;
+  str += ".";
+  str += dataLow;
+  
+  return str;
 }
