@@ -125,6 +125,11 @@ String getStringFromData(double data)
   
     str += dataHigh;
     str += ".";
+    
+    num = 10;
+    if(dataLow < num)
+      str += "0";
+      
     str += dataLow;
   }
   else
