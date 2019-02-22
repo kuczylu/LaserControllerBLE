@@ -11,7 +11,7 @@ class LaserModule {
     bool measure(double& distance);
 
   private:
-    const unsigned int waitIntervalMs = 2;
+    const unsigned int waitIntervalMs = 5;
     const unsigned int waitCountMax = 500;
     void sendCommand(const unsigned char* command, const unsigned int commandSize);
     bool receiveResult(const unsigned int buffSize, unsigned char* buff);

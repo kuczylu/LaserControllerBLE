@@ -63,8 +63,8 @@ void loop() {
 
 
     String resultStr = "r";
-    resultStr += command;
     resultStr += hasSuccess ? "S" : "F";
+    resultStr += command;
     resultStr += getStringFromData(data);
     resultStr += "t";
 
