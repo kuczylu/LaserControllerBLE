@@ -1,10 +1,9 @@
-#define USE_HI_AT
+#define USE_HI_AT // use the Hi-AT laser command set
 
-//#include <HardwareSerial.h>
 #include <Arduino.h>
 #include "LaserModule.h"
 #ifdef USE_HI_AT
-#include "HiAt.h"
+#include "HiAt.h" // import the Hi-AT commands and other module-specific information
 #endif
 
 
@@ -16,6 +15,7 @@ LaserModule::LaserModule()
 
 bool LaserModule::initialize()
 {
+  // begin the hardware serial connection at the baud rate specified by the laser command file
   Serial1.begin(BAUD_RATE);
 
   unsigned int waitCount = 0;
@@ -24,6 +24,7 @@ bool LaserModule::initialize()
       waitCount++;
   }
 
+  // return false if the laser connection times out
   return (waitCount < waitCountMax);
 }
 
@@ -63,7 +64,7 @@ bool LaserModule::closeLaser()
 }
 
 
-bool LaserModule::measure(double& distance) 
+bool LaserModule::measure(unsigned long& distance) 
 {
   sendCommand(MEASURE, MEASURE_SIZE);
 
@@ -81,12 +82,18 @@ bool LaserModule::measure(double& distance)
 
 bool LaserModule::receiveResult(const unsigned int buffSize, unsigned char* buff)
 {
+  // listens for values coming over the hardware serial line, 
+  // called after sending a command, to capture the result
   bool hasResult = false;
   unsigned int waitCount = 0;
   unsigned int valCount = 0;
 
+  // contiuously check the hardware serial for incoming values, 
+  // time out after a given max wait time
   while(!hasResult && (waitCount < waitCountMax))
   {
+    // if a value is found, read the data until it's empty
+    // or until the given buffer is full
     if(Serial1.available() > 0)
     {
       int val = Serial1.read();
@@ -98,6 +105,7 @@ bool LaserModule::receiveResult(const unsigned int buffSize, unsigned char* buff
         valCount++;
       }
 
+      // if the buffer is full, the result is valid
       if(valCount == buffSize)
         hasResult = true;
     }
@@ -112,8 +120,7 @@ bool LaserModule::receiveResult(const unsigned int buffSize, unsigned char* buff
 
 bool LaserModule::verifyResult(const unsigned char* buff0, const unsigned char* buff1, const unsigned int buffSize)
 {
-  // check buff sizes are equal!! use template?
-  
+  // verify that the values contained in the two buffers are identical
   for(unsigned int iVal = 0; iVal < buffSize; iVal++)
   {
       if(buff0[iVal] != buff1[iVal])

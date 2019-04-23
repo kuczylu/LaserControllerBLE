@@ -39,6 +39,7 @@ bool BleInterface::initialize()
 
 bool BleInterface::getCommand(char& command)
 {
+  // use the AT command to listen for communication
   ble.println("AT+BLEUARTRX");
   ble.readline();
   if(strcmp(ble.buffer, "OK") != 0) 
@@ -54,6 +55,7 @@ bool BleInterface::getCommand(char& command)
 
 void BleInterface::sendMessage(const String& message)
 {
+  // use the AT command to send communication
   ble.print("AT+BLEUARTTX=");
   ble.println(message);
 }

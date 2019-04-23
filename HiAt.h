@@ -1,9 +1,9 @@
 #ifndef HI_AT_H
 #define HI_AT_H
-
+// partial command set for Hi-AT Technology 50 meter laser ranging industrial control module
   
 const unsigned int BAUD_RATE = 19200;
-//command and return value sizes
+//command and return value sizes in bytes
 const unsigned int OPEN_SIZE = 1;
 const unsigned int CLOSE_SIZE = 1;
 const unsigned int MEASURE_SIZE = 1;
@@ -22,14 +22,17 @@ const unsigned char MEASURE_RET_VAL[MEASURE_RET_VAL_SIZE] = {0x46, 0x3A, 0X00, 0
                                                              0x0D, 0x0A};
 
 
-double getDistance(const unsigned char* measureBuff)
+unsigned long getDistance(const unsigned char* measureBuff)
 {
-  double distance = 0.0;
+  // function for decoding the measure command return value into a usable distance
+  // measurement (unsigned long), in millimeters
   
-  distance += 100.0 * static_cast<double>(*(measureBuff + 3) - '0');
-  distance += 10.0 * static_cast<double>(*(measureBuff + 5) - '0');
-  distance += 1.0 * static_cast<double>(*(measureBuff + 6) - '0');
-  distance += 0.1 * static_cast<double>(*(measureBuff + 7) - '0');
+  unsigned long distance = 0; // in millimeters
+  
+  distance += 1000 * static_cast<unsigned long>(*(measureBuff + 3) - '0');
+  distance += 100 * static_cast<unsigned long>(*(measureBuff + 5) - '0');
+  distance += 10 * static_cast<unsigned long>(*(measureBuff + 6) - '0');
+  distance += 1 * static_cast<unsigned long>(*(measureBuff + 7) - '0');
   
   return distance;
 }

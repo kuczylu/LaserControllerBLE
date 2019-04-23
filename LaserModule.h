@@ -8,7 +8,7 @@ class LaserModule {
     bool initialize();
     bool openLaser();
     bool closeLaser();
-    bool measure(double& distance);
+    bool measure(unsigned long& distance);
 
   private:
     const unsigned int waitIntervalMs = 5;
