@@ -10,6 +10,7 @@ const unsigned int MEASURE_SIZE = 1;
 const unsigned int OPEN_RET_VAL_SIZE = 7;
 const unsigned int CLOSE_RET_VAL_SIZE = 7;
 const unsigned int MEASURE_RET_VAL_SIZE = 16;
+const unsigned int MEASURE_DATA_START = 2;
 //commands
 const unsigned char OPEN[OPEN_SIZE] = {0x4F};
 const unsigned char CLOSE[CLOSE_SIZE] = {0x43};
@@ -28,11 +29,12 @@ unsigned long getDistance(const unsigned char* measureBuff)
   // measurement (unsigned long), in millimeters
   
   unsigned long distance = 0; // in millimeters
-  
-  distance += 1000 * static_cast<unsigned long>(*(measureBuff + 3) - '0');
-  distance += 100 * static_cast<unsigned long>(*(measureBuff + 5) - '0');
-  distance += 10 * static_cast<unsigned long>(*(measureBuff + 6) - '0');
-  distance += 1 * static_cast<unsigned long>(*(measureBuff + 7) - '0');
+
+  // currently does not support measurements >= 10 meters
+  distance += 1000 * static_cast<unsigned long>(*(measureBuff + MEASURE_DATA_START + 1) - '0');
+  distance += 100 * static_cast<unsigned long>(*(measureBuff + MEASURE_DATA_START + 3) - '0'); // skip the decimal
+  distance += 10 * static_cast<unsigned long>(*(measureBuff + MEASURE_DATA_START + 4) - '0');
+  distance += 1 * static_cast<unsigned long>(*(measureBuff + MEASURE_DATA_START + 5) - '0');
   
   return distance;
 }

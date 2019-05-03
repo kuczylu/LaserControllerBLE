@@ -1,6 +1,6 @@
 // LaserControllerBLE is designed to run on an AdaFruit BlureFruit Feather board, with a harware serial connection
 // to a laser range finder. Once connected to a Bluetoth device, LaserControllerBLE listens for incoming Bluetooth
-// commands, processes them, and sends relavant instructions to the laser via a hardware serial connection. 
+// commands, processes them, and sends relavant instructions to the laser via a hardware serial connection.
 // Measured distances along with other relevant information is reported to the connected device via Bluetooth LE.
 
 
@@ -17,22 +17,29 @@ const char commandMeasure = 'M';
 
 void setup() {
 
+  // pin 13 is tied to the on board LED, configure it for output, for debugging
+  pinMode(13, OUTPUT);
+
   // wait for the bletooth interface to initialize, and connect to a device
-  if(bleInterface.initialize())
+  if (!bleInterface.initialize())
   {
-    delay(500);
-    sendMessage("BLE Interface connected..");
+    // if the bluetooth failed to initialize, blink the led forever
+    while (1)
+      blinkLed();
   }
 
-  // once connected, initialize the laser module
-  if(laser.initialize())
+  // if successful, send a message
+  delay(500);
+  sendMessage("BLE Interface connected..");
+
+  //initialize the laser module
+  if (laser.initialize())
   {
     delay(500);
     sendMessage("Laser serial connected..");
   }
   else
   {
-    // if the initialization times out, report it
     delay(500);
     sendMessage("Laser failed to initialize");
   }
@@ -45,7 +52,7 @@ void loop() {
   unsigned long startTime = millis();
 
   // if a command is found, process the command, and send it to the laser
-  if(bleInterface.getCommand(command))
+  if (bleInterface.getCommand(command))
   {
     bool hasSuccess = false;
     unsigned long data = 0;
@@ -53,24 +60,24 @@ void loop() {
     switch (command)
     {
       case commandOpen:
-      {
-        hasSuccess = laser.openLaser();
-        break;
-      }
+        {
+          hasSuccess = laser.openLaser();
+          break;
+        }
       case commandClose:
-      {
-        hasSuccess = laser.closeLaser();
-        break;
-      }
+        {
+          hasSuccess = laser.closeLaser();
+          break;
+        }
       case commandMeasure:
-      {
-        hasSuccess = laser.measure(data);
-        break;
-      }
+        {
+          hasSuccess = laser.measure(data);
+          break;
+        }
       default:
-      {
-        break;
-      }
+        {
+          break;
+        }
     }
 
     // add the results to the outgoing packet
@@ -82,7 +89,7 @@ void loop() {
     // 4 - "t"
     // 5555 - where "XXXX" is the "0"-padded time measurement in milliseconds
     // 6 - "e"
-    
+
     String resultStr = "r";
     resultStr += hasSuccess ? "S" : "F";
     resultStr += command;
@@ -107,15 +114,15 @@ void sendMessage(const String& message)
 
 String getStringFromData(unsigned long data, unsigned long maxDigits)
 {
-  // convert a time (unsigned long) into a string for transimission
-  // if the time is greater than the available space, set it to the max
+  // convert data (unsigned long) into a zero padded string for transimission
+  // if the data value is greater than the available space, set it to the max (all nines)
   unsigned long maxValue = pow(10, maxDigits) - 1;
   unsigned long dataValue = (data > maxValue) ? maxValue : data;
   String dataStr = "";
 
   // pad the string with zeros
   unsigned long val = pow(10, maxDigits - 1);
-  while(dataValue < val)
+  while (dataValue < val)
   {
     dataStr += "0";
     val /= 10;
@@ -123,6 +130,15 @@ String getStringFromData(unsigned long data, unsigned long maxDigits)
 
   // add the remaining digits
   dataStr += dataValue;
-  
+
   return dataStr;
+}
+
+
+void blinkLed()
+{
+  digitalWrite(13, HIGH);
+  delay(200);
+  digitalWrite(13, LOW);
+  delay(200);
 }

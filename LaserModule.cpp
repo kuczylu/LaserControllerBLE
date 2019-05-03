@@ -18,14 +18,14 @@ bool LaserModule::initialize()
   // begin the hardware serial connection at the baud rate specified by the laser command file
   Serial1.begin(BAUD_RATE);
 
-  unsigned int waitCount = 0;
-  while(!Serial1 && (waitCount < waitCountMax)) {
+  unsigned int waitTimeMs = 0;
+  while(!Serial1 && (waitTimeMs < waitTimeMaxMs)) {
       delay(waitIntervalMs);
-      waitCount++;
+      waitTimeMs += waitIntervalMs;
   }
 
   // return false if the laser connection times out
-  return (waitCount < waitCountMax);
+  return (waitTimeMs < waitTimeMaxMs);
 }
 
 
@@ -43,8 +43,7 @@ bool LaserModule::openLaser()
   unsigned char resultBuffer[OPEN_RET_VAL_SIZE] = {};
   
   if(receiveResult(OPEN_RET_VAL_SIZE, resultBuffer))
-    if(verifyResult(resultBuffer, OPEN_RET_VAL, OPEN_RET_VAL_SIZE))
-      return true;
+    return verifyResult(resultBuffer, OPEN_RET_VAL, OPEN_RET_VAL_SIZE);
 
   return false;
 }
@@ -57,8 +56,7 @@ bool LaserModule::closeLaser()
   unsigned char resultBuffer[CLOSE_RET_VAL_SIZE] = {};
   
   if(receiveResult(CLOSE_RET_VAL_SIZE, resultBuffer))
-    if(verifyResult(resultBuffer, CLOSE_RET_VAL, CLOSE_RET_VAL_SIZE))
-      return true;
+    return verifyResult(resultBuffer, CLOSE_RET_VAL, CLOSE_RET_VAL_SIZE);
 
   return false;
 }
@@ -73,7 +71,9 @@ bool LaserModule::measure(unsigned long& distance)
   if(receiveResult(MEASURE_RET_VAL_SIZE, resultBuffer))
   {
     distance = getDistance(resultBuffer);
-    return true;
+    
+     // only verify up to the start of the data, as the data bits will be different for each measurement
+    return verifyResult(resultBuffer, MEASURE_RET_VAL, MEASURE_DATA_START);
   }
 
   return false;
@@ -85,12 +85,12 @@ bool LaserModule::receiveResult(const unsigned int buffSize, unsigned char* buff
   // listens for values coming over the hardware serial line, 
   // called after sending a command, to capture the result
   bool hasResult = false;
-  unsigned int waitCount = 0;
+  unsigned int waitTimeMs = 0;
   unsigned int valCount = 0;
 
   // contiuously check the hardware serial for incoming values, 
   // time out after a given max wait time
-  while(!hasResult && (waitCount < waitCountMax))
+  while(!hasResult && (waitTimeMs < waitTimeMaxMs))
   {
     // if a value is found, read the data until it's empty
     // or until the given buffer is full
@@ -111,7 +111,7 @@ bool LaserModule::receiveResult(const unsigned int buffSize, unsigned char* buff
     }
 
     delay(waitIntervalMs);
-    waitCount++;
+    waitTimeMs += waitIntervalMs;
   }
 
   return hasResult;
